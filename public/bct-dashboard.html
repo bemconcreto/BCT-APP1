@@ -3,121 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bem Concreto Token (BCT)</title>
-
-    <!-- ⚠️ Tailwind (ok em dev) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- ✅ SDKs Web3Auth -->
-    <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.12.7/dist/modal.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@web3auth/base@8.12.7/dist/base.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@8.12.7/dist/ethereumProvider.umd.min.js"></script>
-
+    <title>Dashboard BCT</title>
     <style>
       body {
-        margin: 0;
         background-color: #121212;
         color: white;
         font-family: "Montserrat", sans-serif;
-        height: 100vh;
-        overflow: hidden;
         display: flex;
-        align-items: center;
         justify-content: center;
-        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
         text-align: center;
       }
-
-      .btn-gold {
-        background: linear-gradient(145deg, #ffd700 0%, #c4a116 100%);
-        color: #121212;
-        font-weight: 700;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        transition: all 0.3s ease;
-      }
-
-      .btn-gold:hover {
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
-        transform: translateY(-2px);
+      h1 {
+        font-size: 24px;
+        color: #ffd700;
       }
     </style>
   </head>
-
   <body>
-    <h1 class="text-2xl font-bold mb-6">Bem Concreto Token (BCT)</h1>
-    <div id="status" class="text-gray-300 mb-6">Aguardando autenticação...</div>
-    <button id="web3auth-button" class="btn-gold hidden">
-      Entrar com Web3Auth
-    </button>
-
-    <script>
-      console.log("🟢 Iniciando front do BCT... aguardando autenticação.");
-
-      const statusDiv = document.getElementById("status");
-      const loginButton = document.getElementById("web3auth-button");
-
-      window.addEventListener("message", async (event) => {
-        if (event.data?.type === "WEB3AUTH_READY") {
-          console.log("🔵 Web3Auth sinalizado como pronto.");
-
-          statusDiv.innerText = "Web3Auth detectado. Inicializando...";
-
-          try {
-            console.log("🟡 Inicializando Web3Auth...");
-            const clientId =
-              "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE";
-
-            // 🧩 Corrigido: Objeto global com 'A' maiúsculo
-            const { EthereumPrivateKeyProvider } = window.Web3AuthEthereumProvider;
-
-            const privateKeyProvider = new EthereumPrivateKeyProvider({
-              config: {
-                chainConfig: {
-                  chainNamespace: "eip155",
-                  chainId: "0x89", // Polygon mainnet
-                  rpcTarget: "https://polygon-rpc.com",
-                },
-              },
-            });
-
-            const { Web3Auth } = window.Web3AuthModal;
-            const web3auth = new Web3Auth({
-              clientId,
-              web3AuthNetwork: "sapphire_devnet",
-              privateKeyProvider,
-            });
-
-            await web3auth.initModal();
-            console.log("✅ Web3Auth inicializado dentro do iframe.");
-
-            // Exibe botão após init
-            loginButton.classList.remove("hidden");
-            statusDiv.innerText =
-              "Web3Auth pronto. Clique para entrar na sua conta.";
-
-            loginButton.onclick = async () => {
-              try {
-                const provider = await web3auth.connect();
-                if (provider) {
-                  console.log("✅ Usuário autenticado com sucesso!");
-                  statusDiv.innerText = "Usuário autenticado!";
-                  loginButton.classList.add("hidden");
-                }
-              } catch (loginError) {
-                console.error("❌ Erro no login:", loginError);
-                alert("Erro ao conectar. Tente novamente.");
-              }
-            };
-          } catch (err) {
-            console.error("❌ Erro ao inicializar Web3Auth:", err);
-            statusDiv.innerText = "Erro ao inicializar autenticação.";
-          }
-        }
-      });
-    </script>
+    <h1>Bem-vindo ao Dashboard do Bem Concreto Token</h1>
+    <p>✅ Usuário autenticado via Web3Auth.</p>
   </body>
 </html>
