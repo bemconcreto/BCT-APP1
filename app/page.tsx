@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Web3Auth } from "@web3auth/modal";
-import { CHAIN_NAMESPACES } from "@web3auth/base";
+import { CHAIN_NAMESPACES, WALLET_ADAPTERS } from "@web3auth/base";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 
 export default function Home() {
   const [web3auth, setWeb3auth] = useState<any>(null);
@@ -11,14 +12,25 @@ export default function Home() {
   useEffect(() => {
     const init = async () => {
       try {
-        const web3authInstance = new Web3Auth({
-          clientId: "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
-          web3AuthNetwork: "testnet",
-          chainConfig: {
-            chainNamespace: CHAIN_NAMESPACES.EIP155,
-            chainId: "0x89", // Polygon mainnet
-            rpcTarget: "https://polygon-rpc.com",
+        // ✅ Cria o provider de chave privada compatível com EIP-155 (Polygon)
+        const privateKeyProvider = new EthereumPrivateKeyProvider({
+          config: {
+            chainConfig: {
+              chainNamespace: CHAIN_NAMESPACES.EIP155,
+              chainId: "0x89", // Polygon mainnet
+              rpcTarget: "https://polygon-rpc.com",
+              displayName: "Polygon Mainnet",
+              ticker: "MATIC",
+              tickerName: "Polygon",
+            },
           },
+        });
+
+        // ✅ Inicializa o Web3Auth com o provider exigido
+        const web3authInstance = new Web3Auth({
+          clientId: "SEU_CLIENT_ID_AQUI",
+          web3AuthNetwork: "testnet",
+          privateKeyProvider,
         });
 
         setWeb3auth(web3authInstance);
@@ -34,7 +46,7 @@ export default function Home() {
 
   const login = async () => {
     if (!web3auth) return;
-    const web3authProvider = await web3auth.connect();
+    const web3authProvider = await web3auth.connectTo(WALLET_ADAPTERS.OPENLOGIN, {});
     setProvider(web3authProvider);
   };
 
@@ -50,7 +62,7 @@ export default function Home() {
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <h1>Bem Concreto Token</h1>
+      <h1>Bem Concreto Token (BCT)</h1>
       {!provider ? (
         <button
           onClick={login}
