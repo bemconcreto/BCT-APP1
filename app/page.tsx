@@ -31,8 +31,8 @@ export default function Home() {
 
       const instance = new Web3Auth({
         clientId:
-          "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
-        web3AuthNetwork: "testnet",
+          "BIeIO0GBl1lBAmFNLr1vUx5mp1iwNOz5B-plE8T8IOCpwm2fmEJPNp-L7qZXc-3X9rGaVsStf4Nq2oCJ-Tf1oW4",
+        web3AuthNetwork: "sapphire_devnet",
         privateKeyProvider,
       });
 
