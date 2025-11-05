@@ -1,131 +1,119 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bem Concreto Token (BCT)</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bem Concreto Token (BCT)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- TailwindCSS para layout -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ✅ SDKs do Web3Auth -->
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.12.7/dist/modal.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/base@8.12.7/dist/base.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@8.12.7/dist/ethereumProvider.umd.min.js"></script>
 
-  <!-- SDK Web3Auth -->
-  <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.12.7/dist/web3auth.umd.min.js"></script>
-
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: 'Montserrat', sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-
-    .btn-gold {
-      background: linear-gradient(145deg, #FFD700 0%, #C4A116 100%);
-      color: #121212;
-      font-weight: 700;
-      padding: 14px 24px;
-      border-radius: 10px;
-      text-align: center;
-      display: inline-block;
-      transition: all 0.3s ease;
-    }
-
-    .btn-gold:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
-    }
-
-    #loader {
-      text-align: center;
-      color: #aaa;
-      margin-top: 100px;
-    }
-  </style>
-</head>
-
-<body class="flex flex-col items-center justify-center min-h-screen text-center">
-
-  <!-- Loader inicial -->
-  <div id="loader">
-    <p class="text-lg">🚀 Carregando Bem Concreto Token...</p>
-    <p class="text-xs text-gray-500 mt-2">aguarde alguns segundos</p>
-  </div>
-
-  <!-- Logo -->
-  <h1 class="text-3xl font-bold mb-6 mt-10">
-    BEM CONCRETO TOKEN (BCT)
-  </h1>
-
-  <!-- Botão de login -->
-  <button id="web3auth-button" class="btn-gold hidden">
-    Entrar com Web3Auth
-  </button>
-
-  <p class="text-sm text-gray-500 mt-6">
-    Plataforma imobiliária tokenizada • Bem Concreto Token
-  </p>
-
-  <script>
-    console.log("🟢 Iniciando front do BCT... aguardando autenticação.");
-
-    let web3auth = null;
-
-    // Recebe sinal do app Next.js
-    window.addEventListener("message", async (event) => {
-      if (event.data && event.data.type === "WEB3AUTH_READY") {
-        console.log("🔵 Web3Auth sinalizado como pronto.");
-
-        // Exibe botão e remove loader
-        document.getElementById("web3auth-button").style.display = "block";
-        document.getElementById("loader").style.display = "none";
-
-        try {
-          console.log("🟡 Inicializando Web3Auth...");
-
-          web3auth = new window.Web3auth.Web3Auth({
-            clientId: "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
-            web3AuthNetwork: "sapphire_devnet",
-            chainConfig: {
-              chainNamespace: "eip155",
-              chainId: "0x89", // Polygon Mainnet
-              rpcTarget: "https://polygon-rpc.com",
-            },
-          });
-
-          await web3auth.initModal();
-          console.log("✅ Web3Auth inicializado com sucesso.");
-        } catch (error) {
-          console.error("❌ Erro ao inicializar Web3Auth:", error);
-          alert("Erro na inicialização do Web3Auth. Veja o console.");
-        }
+    <style>
+      body {
+        margin: 0;
+        background-color: #121212;
+        color: white;
+        font-family: "Montserrat", sans-serif;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
       }
-    });
 
-    // Clique para login
-    document.getElementById("web3auth-button").addEventListener("click", async () => {
-      try {
-        if (!web3auth) {
-          alert("⚠️ Web3Auth ainda não está pronto. Aguarde 2 segundos e tente novamente.");
-          return;
-        }
-
-        console.log("🔐 Abrindo modal de login...");
-        const provider = await web3auth.connect();
-
-        if (provider) {
-          console.log("✅ Login realizado com sucesso:", provider);
-          alert("✅ Login realizado com sucesso!");
-        } else {
-          alert("⚠️ Nenhum provedor retornado pelo Web3Auth.");
-        }
-      } catch (err) {
-        console.error("❌ Erro no login:", err);
-        alert("Erro ao fazer login. Verifique o console para detalhes.");
+      .btn-gold {
+        background: linear-gradient(145deg, #ffd700 0%, #c4a116 100%);
+        color: #121212;
+        font-weight: 700;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        transition: all 0.3s ease;
       }
-    });
-  </script>
-</body>
+
+      .btn-gold:hover {
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1 class="text-2xl font-bold mb-6">Bem Concreto Token (BCT)</h1>
+    <div id="status" class="text-gray-300 mb-6">Aguardando autenticação...</div>
+    <button id="web3auth-button" class="btn-gold hidden">
+      Entrar com Web3Auth
+    </button>
+
+    <script>
+      console.log("🟢 Iniciando front do BCT... aguardando autenticação.");
+
+      const statusDiv = document.getElementById("status");
+      const loginButton = document.getElementById("web3auth-button");
+
+      // 🔹 Escuta mensagens vindas do app Next.js
+      window.addEventListener("message", async (event) => {
+        if (event.data?.type === "WEB3AUTH_READY") {
+          console.log("🔵 Web3Auth sinalizado como pronto.");
+
+          statusDiv.innerText = "Web3Auth detectado. Inicializando...";
+
+          try {
+            console.log("🟡 Inicializando Web3Auth...");
+            const clientId =
+              "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE";
+
+            const privateKeyProvider =
+              new window.Web3authEthereumProvider.EthereumPrivateKeyProvider({
+                config: {
+                  chainConfig: {
+                    chainNamespace: "eip155",
+                    chainId: "0x89",
+                    rpcTarget: "https://polygon-rpc.com",
+                  },
+                },
+              });
+
+            const web3auth = new window.Web3authModal.Web3Auth({
+              clientId,
+              web3AuthNetwork: "sapphire_devnet",
+              privateKeyProvider,
+            });
+
+            await web3auth.initModal();
+            console.log("✅ Web3Auth inicializado dentro do iframe.");
+
+            // Exibe o botão
+            loginButton.classList.remove("hidden");
+            statusDiv.innerText =
+              "Web3Auth pronto. Clique para entrar na sua conta.";
+
+            loginButton.onclick = async () => {
+              try {
+                const provider = await web3auth.connect();
+                if (provider) {
+                  console.log("✅ Usuário conectado com sucesso!");
+                  statusDiv.innerText = "Usuário autenticado!";
+                  loginButton.classList.add("hidden");
+                }
+              } catch (loginError) {
+                console.error("❌ Erro no login do Web3Auth:", loginError);
+                alert("Erro ao conectar. Tente novamente.");
+              }
+            };
+          } catch (err) {
+            console.error("❌ Erro ao inicializar Web3Auth:", err);
+            statusDiv.innerText = "Erro ao inicializar autenticação.";
+          }
+        }
+      });
+    </script>
+  </body>
 </html>
