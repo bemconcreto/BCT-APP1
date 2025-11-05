@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
   const [provider, setProvider] = useState<IProvider | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function Home() {
           config: {
             chainConfig: {
               chainNamespace: CHAIN_NAMESPACES.EIP155,
-              chainId: "0x89", // Polygon mainnet
+              chainId: "0x89", // Polygon Mainnet
               rpcTarget: "https://polygon-rpc.com",
             },
           },
@@ -35,6 +36,7 @@ export default function Home() {
         await web3authInstance.initModal();
         console.log("✅ Web3Auth inicializado");
         setWeb3auth(web3authInstance);
+        setLoading(false);
 
         if (web3authInstance.provider) {
           console.log("🔐 Usuário já logado, redirecionando...");
@@ -42,7 +44,8 @@ export default function Home() {
           router.push("/dashboard");
         }
       } catch (error) {
-        console.error("❌ Erro ao inicializar Web3Auth:", error);
+        console.error("❌ Erro ao iniciar Web3Auth:", error);
+        setLoading(false);
       }
     };
 
@@ -50,12 +53,12 @@ export default function Home() {
   }, [router]);
 
   const login = async () => {
-    try {
-      if (!web3auth) {
-        alert("Web3Auth ainda não inicializado. Aguarde 2 segundos e tente novamente.");
-        return;
-      }
+    if (!web3auth) {
+      alert("Carregando Web3Auth... tente novamente em 2 segundos.");
+      return;
+    }
 
+    try {
       console.log("🔵 Abrindo modal de login...");
       const provider = await web3auth.connect();
       console.log("✅ Login realizado com sucesso!");
@@ -63,6 +66,7 @@ export default function Home() {
       router.push("/dashboard");
     } catch (error) {
       console.error("❌ Erro no login:", error);
+      alert("Falha no login. Tente novamente.");
     }
   };
 
@@ -91,22 +95,36 @@ export default function Home() {
         Bem Concreto Token (BCT)
       </h1>
 
-      <button
-        onClick={login}
-        style={{
-          background: "linear-gradient(145deg, #FFD700 0%, #C4A116 100%)",
-          color: "#121212",
-          padding: "1rem 2rem",
-          borderRadius: "0.75rem",
-          fontWeight: "700",
-          fontSize: "1rem",
-          boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
-          cursor: "pointer",
-          transition: "transform 0.2s ease, box-shadow 0.3s ease",
-        }}
-      >
-        Entrar com Web3Auth
-      </button>
+      {loading ? (
+        <p style={{ color: "#999" }}>Inicializando autenticação...</p>
+      ) : (
+        <button
+          onClick={login}
+          style={{
+            background: "linear-gradient(145deg, #FFD700 0%, #C4A116 100%)",
+            color: "#121212",
+            padding: "1rem 2rem",
+            borderRadius: "0.75rem",
+            fontWeight: "700",
+            fontSize: "1rem",
+            boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
+            cursor: "pointer",
+            transition: "transform 0.2s ease, box-shadow 0.3s ease",
+          }}
+          onMouseOver={(e) => {
+            (e.target as HTMLButtonElement).style.transform = "translateY(-2px)";
+            (e.target as HTMLButtonElement).style.boxShadow =
+              "0 6px 20px rgba(255, 215, 0, 0.5)";
+          }}
+          onMouseOut={(e) => {
+            (e.target as HTMLButtonElement).style.transform = "translateY(0)";
+            (e.target as HTMLButtonElement).style.boxShadow =
+              "0 4px 15px rgba(255, 215, 0, 0.3)";
+          }}
+        >
+          Entrar com Web3Auth
+        </button>
+      )}
     </main>
   );
 }
