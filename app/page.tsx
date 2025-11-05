@@ -10,62 +10,79 @@ export default function Home() {
   const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        console.log("🟡 Inicializando Web3Auth...");
-        const privateKeyProvider = new EthereumPrivateKeyProvider({
-          config: {
-            chainConfig: {
-              chainNamespace: CHAIN_NAMESPACES.EIP155,
-              chainId: "0x89", // Polygon Mainnet
-              rpcTarget: "https://polygon-rpc.com",
-            },
+  // tenta iniciar, e se falhar por whitelist mostra o motivo
+  const initWeb3Auth = async () => {
+    try {
+      setLoading(true);
+      setInitError(null);
+
+      const privateKeyProvider = new EthereumPrivateKeyProvider({
+        config: {
+          chainConfig: {
+            chainNamespace: CHAIN_NAMESPACES.EIP155,
+            chainId: "0x89", // Polygon Mainnet
+            rpcTarget: "https://polygon-rpc.com",
           },
-        });
+        },
+      });
 
-        const web3authInstance = new Web3Auth({
-          clientId:
-            "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
-          web3AuthNetwork: "testnet",
-          privateKeyProvider,
-        });
+      const instance = new Web3Auth({
+        clientId:
+          "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
+        web3AuthNetwork: "testnet",
+        privateKeyProvider,
+      });
 
-        await web3authInstance.initModal();
-        console.log("✅ Web3Auth inicializado");
-        setWeb3auth(web3authInstance);
-        setLoading(false);
+      await instance.initModal();
+      setWeb3auth(instance);
+      setLoading(false);
 
-        if (web3authInstance.provider) {
-          console.log("🔐 Usuário já logado, redirecionando...");
-          setProvider(web3authInstance.provider);
-          router.push("/dashboard");
-        }
-      } catch (error) {
-        console.error("❌ Erro ao iniciar Web3Auth:", error);
-        setLoading(false);
+      if (instance.provider) {
+        setProvider(instance.provider);
+        router.push("/dashboard");
       }
-    };
+    } catch (err: any) {
+      console.error("❌ initModal error:", err);
+      // Mensagens mais claras para os casos comuns
+      const msg =
+        String(err?.message || "")
+          .toLowerCase()
+          .includes("configuration")
+          || String(err?.message || "")
+            .toLowerCase()
+            .includes("whitelist")
+          ? "Domínio não está na Whitelist do Web3Auth. Adicione o domínio atual no painel e salve."
+          : "Falha ao iniciar o Web3Auth. Verifique o clientId e a rede.";
+      setInitError(msg);
+      setLoading(false);
+      setWeb3auth(null);
+    }
+  };
 
-    init();
-  }, [router]);
+  useEffect(() => {
+    initWeb3Auth();
+    // opcional: uma segunda tentativa automática depois de 2s
+    const t = setTimeout(() => {
+      if (!web3auth && !provider) initWeb3Auth();
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async () => {
     if (!web3auth) {
-      alert("Carregando Web3Auth... tente novamente em 2 segundos.");
+      alert("Autenticação ainda carregando. Ajuste a whitelist no Web3Auth e recarregue a página.");
       return;
     }
-
     try {
-      console.log("🔵 Abrindo modal de login...");
-      const provider = await web3auth.connect();
-      console.log("✅ Login realizado com sucesso!");
-      setProvider(provider);
+      const prov = await web3auth.connect();
+      setProvider(prov);
       router.push("/dashboard");
-    } catch (error) {
-      console.error("❌ Erro no login:", error);
+    } catch (err) {
+      console.error("❌ login error:", err);
       alert("Falha no login. Tente novamente.");
     }
   };
@@ -81,49 +98,81 @@ export default function Home() {
         justifyContent: "center",
         color: "#fff",
         fontFamily: "Montserrat, sans-serif",
+        padding: 24,
+        textAlign: "center",
       }}
     >
       <h1
         style={{
           fontSize: "2rem",
-          fontWeight: "700",
-          marginBottom: "2rem",
+          fontWeight: 700,
+          marginBottom: "1rem",
           color: "#FFD700",
-          textAlign: "center",
         }}
       >
         Bem Concreto Token (BCT)
       </h1>
 
       {loading ? (
-        <p style={{ color: "#999" }}>Inicializando autenticação...</p>
+        <p style={{ color: "#aaa" }}>Inicializando autenticação…</p>
       ) : (
-        <button
-          onClick={login}
-          style={{
-            background: "linear-gradient(145deg, #FFD700 0%, #C4A116 100%)",
-            color: "#121212",
-            padding: "1rem 2rem",
-            borderRadius: "0.75rem",
-            fontWeight: "700",
-            fontSize: "1rem",
-            boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
-            cursor: "pointer",
-            transition: "transform 0.2s ease, box-shadow 0.3s ease",
-          }}
-          onMouseOver={(e) => {
-            (e.target as HTMLButtonElement).style.transform = "translateY(-2px)";
-            (e.target as HTMLButtonElement).style.boxShadow =
-              "0 6px 20px rgba(255, 215, 0, 0.5)";
-          }}
-          onMouseOut={(e) => {
-            (e.target as HTMLButtonElement).style.transform = "translateY(0)";
-            (e.target as HTMLButtonElement).style.boxShadow =
-              "0 4px 15px rgba(255, 215, 0, 0.3)";
-          }}
-        >
-          Entrar com Web3Auth
-        </button>
+        <>
+          {initError && (
+            <div
+              style={{
+                background: "#2a2a2a",
+                border: "1px solid #DD5555",
+                color: "#FFCCCC",
+                padding: "12px 16px",
+                borderRadius: 8,
+                marginBottom: 16,
+                maxWidth: 560,
+              }}
+            >
+              <b>Erro na inicialização:</b> {initError}
+              <div style={{ marginTop: 8, fontSize: 13, color: "#bbb" }}>
+                Certifique-se de adicionar: <br />
+                <code>https://bct-app-1-e4gbp0ql6-bem-concretos-projects.vercel.app</code>
+                <br />
+                em <i>Configuration → Whitelist URLs</i> no painel do Web3Auth.
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={login}
+            disabled={!web3auth}
+            style={{
+              background: "linear-gradient(145deg, #FFD700 0%, #C4A116 100%)",
+              color: "#121212",
+              padding: "1rem 2rem",
+              borderRadius: "0.75rem",
+              fontWeight: 700,
+              fontSize: "1rem",
+              boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
+              cursor: web3auth ? "pointer" : "not-allowed",
+              opacity: web3auth ? 1 : 0.5,
+            }}
+          >
+            Entrar com Web3Auth
+          </button>
+
+          <div style={{ marginTop: 12 }}>
+            <button
+              onClick={initWeb3Auth}
+              style={{
+                background: "transparent",
+                border: "1px solid #444",
+                color: "#ccc",
+                padding: "8px 12px",
+                borderRadius: 8,
+                fontSize: 14,
+              }}
+            >
+              Recarregar autenticação
+            </button>
+          </div>
+        </>
       )}
     </main>
   );
