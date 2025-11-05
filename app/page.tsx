@@ -14,49 +14,58 @@ export default function Home() {
   useEffect(() => {
     const init = async () => {
       try {
-        // 🔑 Criando o provider Ethereum exigido pela versão 8+
+        console.log("🟡 Inicializando Web3Auth...");
         const privateKeyProvider = new EthereumPrivateKeyProvider({
           config: {
             chainConfig: {
               chainNamespace: CHAIN_NAMESPACES.EIP155,
-              chainId: "0x89", // Polygon Mainnet
+              chainId: "0x89", // Polygon mainnet
               rpcTarget: "https://polygon-rpc.com",
             },
           },
         });
 
-        // 🚀 Inicializa o Web3Auth com o provider Ethereum
         const web3authInstance = new Web3Auth({
           clientId:
             "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
           web3AuthNetwork: "testnet",
-          privateKeyProvider, // ✅ ESSA LINHA É ESSENCIAL
+          privateKeyProvider,
         });
 
         await web3authInstance.initModal();
+        console.log("✅ Web3Auth inicializado");
         setWeb3auth(web3authInstance);
 
         if (web3authInstance.provider) {
+          console.log("🔐 Usuário já logado, redirecionando...");
           setProvider(web3authInstance.provider);
           router.push("/dashboard");
         }
       } catch (error) {
-        console.error("Erro ao iniciar Web3Auth:", error);
+        console.error("❌ Erro ao inicializar Web3Auth:", error);
       }
     };
 
     init();
   }, [router]);
 
-  // 🔓 Função de login
   const login = async () => {
-    if (!web3auth) return;
-    const provider = await web3auth.connect();
-    setProvider(provider);
-    router.push("/dashboard");
+    try {
+      if (!web3auth) {
+        alert("Web3Auth ainda não inicializado. Aguarde 2 segundos e tente novamente.");
+        return;
+      }
+
+      console.log("🔵 Abrindo modal de login...");
+      const provider = await web3auth.connect();
+      console.log("✅ Login realizado com sucesso!");
+      setProvider(provider);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("❌ Erro no login:", error);
+    }
   };
 
-  // 🎨 Interface visual do login
   return (
     <main
       style={{
@@ -94,16 +103,6 @@ export default function Home() {
           boxShadow: "0 4px 15px rgba(255, 215, 0, 0.3)",
           cursor: "pointer",
           transition: "transform 0.2s ease, box-shadow 0.3s ease",
-        }}
-        onMouseOver={(e) => {
-          (e.target as HTMLButtonElement).style.transform = "translateY(-2px)";
-          (e.target as HTMLButtonElement).style.boxShadow =
-            "0 6px 20px rgba(255, 215, 0, 0.5)";
-        }}
-        onMouseOut={(e) => {
-          (e.target as HTMLButtonElement).style.transform = "translateY(0)";
-          (e.target as HTMLButtonElement).style.boxShadow =
-            "0 4px 15px rgba(255, 215, 0, 0.3)";
         }}
       >
         Entrar com Web3Auth
