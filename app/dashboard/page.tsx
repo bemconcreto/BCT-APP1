@@ -1,29 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
-    // injeta o script do Tailwind + Lucide + lógica principal
-    const script = document.createElement("script");
-    script.src = "https://cdn.tailwindcss.com";
-    document.body.appendChild(script);
+    // Cria o iframe para carregar o front-end Gemini
+    const iframe = document.createElement("iframe");
+    iframe.src = "/bct-dashboard.html";
+    iframe.style.width = "100%";
+    iframe.style.height = "100vh";
+    iframe.style.border = "none";
+    iframe.style.display = "block";
+    iframe.style.overflow = "hidden";
 
-    const lucide = document.createElement("script");
-    lucide.src = "https://unpkg.com/lucide@latest";
-    document.body.appendChild(lucide);
+    // Quando o front terminar de carregar, atualiza o estado
+    iframe.onload = () => {
+      setIsLoaded(true);
 
-    // cria o container onde o conteúdo será renderizado
-    const container = document.createElement("div");
-    container.innerHTML = `
-      <iframe src="/bct-dashboard.html" style="border:none;width:100%;height:100vh;"></iframe>
-    `;
-    document.body.appendChild(container);
+      // Envia um sinal para o front dentro do iframe
+      iframe.contentWindow?.postMessage(
+        { type: "WEB3AUTH_READY", message: "Usuário autenticado no Web3Auth" },
+        "*"
+      );
+    };
+
+    document.body.appendChild(iframe);
 
     return () => {
-      document.body.removeChild(container);
-      document.body.removeChild(script);
-      document.body.removeChild(lucide);
+      document.body.removeChild(iframe);
     };
   }, []);
 
@@ -33,12 +39,28 @@ export default function Dashboard() {
         height: "100vh",
         width: "100%",
         backgroundColor: "#121212",
-        color: "white",
-        textAlign: "center",
-        paddingTop: "20px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        color: "#FFD700",
+        fontFamily: "Montserrat, sans-serif",
+        flexDirection: "column",
       }}
     >
-      <h2>Carregando Bem Concreto Token...</h2>
+      {isLoaded ? (
+        <p style={{ fontSize: "0.9rem", color: "#aaa" }}>
+          ✅ Interface carregada. Você já está autenticado.
+        </p>
+      ) : (
+        <>
+          <h2 style={{ marginBottom: "1rem" }}>
+            CARREGANDO BEM CONCRETO TOKEN...
+          </h2>
+          <p style={{ fontSize: "0.9rem", color: "#888" }}>
+            Aguardando inicialização segura do painel
+          </p>
+        </>
+      )}
     </div>
   );
 }
