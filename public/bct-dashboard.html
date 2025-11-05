@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bem Concreto Token (BCT)</title>
 
-  <!-- TailwindCSS para layout rápido -->
+  <!-- TailwindCSS para layout -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -48,7 +48,7 @@
 
 <body class="flex flex-col items-center justify-center min-h-screen text-center">
 
-  <!-- Loader -->
+  <!-- Loader inicial -->
   <div id="loader">
     <p class="text-lg">🚀 Carregando Bem Concreto Token...</p>
     <p class="text-xs text-gray-500 mt-2">aguarde alguns segundos</p>
@@ -73,12 +73,12 @@
 
     let web3auth = null;
 
-    // Ouvindo mensagem do app Next.js (pai)
+    // Recebe sinal do app Next.js
     window.addEventListener("message", async (event) => {
       if (event.data && event.data.type === "WEB3AUTH_READY") {
         console.log("🔵 Web3Auth sinalizado como pronto.");
 
-        // Exibe o botão e remove loader
+        // Exibe botão e remove loader
         document.getElementById("web3auth-button").style.display = "block";
         document.getElementById("loader").style.display = "none";
 
@@ -91,13 +91,12 @@
             chainConfig: {
               chainNamespace: "eip155",
               chainId: "0x89", // Polygon Mainnet
-              rpcTarget: "https://polygon-rpc.com"
+              rpcTarget: "https://polygon-rpc.com",
             },
           });
 
           await web3auth.initModal();
           console.log("✅ Web3Auth inicializado com sucesso.");
-
         } catch (error) {
           console.error("❌ Erro ao inicializar Web3Auth:", error);
           alert("Erro na inicialização do Web3Auth. Veja o console.");
@@ -105,7 +104,7 @@
       }
     });
 
-    // Clique no botão para abrir o modal de login
+    // Clique para login
     document.getElementById("web3auth-button").addEventListener("click", async () => {
       try {
         if (!web3auth) {
