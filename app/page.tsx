@@ -28,7 +28,7 @@ export default function Home() {
 
         // ✅ Inicializa o Web3Auth com o provider exigido
         const web3authInstance = new Web3Auth({
-          clientId: "SEU_CLIENT_ID_AQUI",
+          clientId: "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
           web3AuthNetwork: "testnet",
           privateKeyProvider,
         });
