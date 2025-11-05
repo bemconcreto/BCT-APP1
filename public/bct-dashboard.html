@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bem Concreto Token (BCT)</title>
+
+    <!-- ⚠️ Tailwind (ok em dev) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- ✅ SDKs do Web3Auth -->
+    <!-- ✅ SDKs Web3Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@web3auth/modal@8.12.7/dist/modal.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@web3auth/base@8.12.7/dist/base.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@web3auth/ethereum-provider@8.12.7/dist/ethereumProvider.umd.min.js"></script>
@@ -58,7 +60,6 @@
       const statusDiv = document.getElementById("status");
       const loginButton = document.getElementById("web3auth-button");
 
-      // 🔹 Escuta mensagens vindas do app Next.js
       window.addEventListener("message", async (event) => {
         if (event.data?.type === "WEB3AUTH_READY") {
           console.log("🔵 Web3Auth sinalizado como pronto.");
@@ -70,18 +71,21 @@
             const clientId =
               "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE";
 
-            const privateKeyProvider =
-              new window.Web3authEthereumProvider.EthereumPrivateKeyProvider({
-                config: {
-                  chainConfig: {
-                    chainNamespace: "eip155",
-                    chainId: "0x89",
-                    rpcTarget: "https://polygon-rpc.com",
-                  },
-                },
-              });
+            // 🧩 Corrigido: Objeto global com 'A' maiúsculo
+            const { EthereumPrivateKeyProvider } = window.Web3AuthEthereumProvider;
 
-            const web3auth = new window.Web3authModal.Web3Auth({
+            const privateKeyProvider = new EthereumPrivateKeyProvider({
+              config: {
+                chainConfig: {
+                  chainNamespace: "eip155",
+                  chainId: "0x89", // Polygon mainnet
+                  rpcTarget: "https://polygon-rpc.com",
+                },
+              },
+            });
+
+            const { Web3Auth } = window.Web3AuthModal;
+            const web3auth = new Web3Auth({
               clientId,
               web3AuthNetwork: "sapphire_devnet",
               privateKeyProvider,
@@ -90,7 +94,7 @@
             await web3auth.initModal();
             console.log("✅ Web3Auth inicializado dentro do iframe.");
 
-            // Exibe o botão
+            // Exibe botão após init
             loginButton.classList.remove("hidden");
             statusDiv.innerText =
               "Web3Auth pronto. Clique para entrar na sua conta.";
@@ -99,12 +103,12 @@
               try {
                 const provider = await web3auth.connect();
                 if (provider) {
-                  console.log("✅ Usuário conectado com sucesso!");
+                  console.log("✅ Usuário autenticado com sucesso!");
                   statusDiv.innerText = "Usuário autenticado!";
                   loginButton.classList.add("hidden");
                 }
               } catch (loginError) {
-                console.error("❌ Erro no login do Web3Auth:", loginError);
+                console.error("❌ Erro no login:", loginError);
                 alert("Erro ao conectar. Tente novamente.");
               }
             };
