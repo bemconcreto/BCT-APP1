@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, IProvider } from "@web3auth/base";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -13,14 +14,23 @@ export default function Home() {
   useEffect(() => {
     const init = async () => {
       try {
-        const web3authInstance = new Web3Auth({
-          clientId: "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
-          web3AuthNetwork: "testnet",
-          chainConfig: {
-            chainNamespace: CHAIN_NAMESPACES.EIP155,
-            chainId: "0x89", // Polygon Mainnet
-            rpcTarget: "https://polygon-rpc.com",
+        // 🔑 Criando o provider Ethereum exigido pela versão 8+
+        const privateKeyProvider = new EthereumPrivateKeyProvider({
+          config: {
+            chainConfig: {
+              chainNamespace: CHAIN_NAMESPACES.EIP155,
+              chainId: "0x89", // Polygon Mainnet
+              rpcTarget: "https://polygon-rpc.com",
+            },
           },
+        });
+
+        // 🚀 Inicializa o Web3Auth com o provider Ethereum
+        const web3authInstance = new Web3Auth({
+          clientId:
+            "BIwYJojwNhLFJ0-IqacUDTW1U6hoGoJrEz6KdgvokTwlUGtXaT6jdtK7lik7lJVlgz6HuSRDIn5Vh-_oOyVqvaE",
+          web3AuthNetwork: "testnet",
+          privateKeyProvider, // ✅ ESSA LINHA É ESSENCIAL
         });
 
         await web3authInstance.initModal();
@@ -31,13 +41,14 @@ export default function Home() {
           router.push("/dashboard");
         }
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao iniciar Web3Auth:", error);
       }
     };
 
     init();
   }, [router]);
 
+  // 🔓 Função de login
   const login = async () => {
     if (!web3auth) return;
     const provider = await web3auth.connect();
@@ -45,6 +56,7 @@ export default function Home() {
     router.push("/dashboard");
   };
 
+  // 🎨 Interface visual do login
   return (
     <main
       style={{
@@ -58,7 +70,15 @@ export default function Home() {
         fontFamily: "Montserrat, sans-serif",
       }}
     >
-      <h1 style={{ fontSize: "2rem", fontWeight: "700", marginBottom: "2rem", color: "#FFD700" }}>
+      <h1
+        style={{
+          fontSize: "2rem",
+          fontWeight: "700",
+          marginBottom: "2rem",
+          color: "#FFD700",
+          textAlign: "center",
+        }}
+      >
         Bem Concreto Token (BCT)
       </h1>
 
